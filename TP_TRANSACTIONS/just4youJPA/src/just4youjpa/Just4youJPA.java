@@ -20,7 +20,8 @@ public class Just4youJPA {
         // TODO code application logic here
         Model m = new Model();
         
-        m.createProduit("Patate", "Patatier", 5, 2, 8, 4);
+        m.createProduit("Patate", "Patatier", 5, 2, 10, 3);
+        m.creerCommandeClient(1,"Arles", "Mathieu", 4, 1);
     }
     
 }

@@ -6,7 +6,6 @@
 package just4youjpa.model.service;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -16,6 +15,7 @@ import javax.persistence.Query;
 import just4youjpa.model.entities.Client;
 import just4youjpa.model.entities.Commande;
 import just4youjpa.model.entities.CommandeFournisseur;
+import just4youjpa.model.entities.CommandePK;
 import just4youjpa.model.entities.Produit;
 
 /**
@@ -26,6 +26,15 @@ public class Model {
 
     private final EntityManagerFactory emf = Persistence.createEntityManagerFactory("just4youJPAPU");
 
+    /**
+     * Création d'un produit
+     * @param libelle
+     * @param fournisseur
+     * @param qtte
+     * @param seuilMin
+     * @param seuilMax
+     * @param prix 
+     */
     public void createProduit(String libelle, String fournisseur, int qtte, int seuilMin, int seuilMax,
             int prix) {
         EntityManager em = emf.createEntityManager();
@@ -44,50 +53,87 @@ public class Model {
         em.close();
     }
 
+    /**
+     * Livraison d'une commande fournisseur. Si la date de livraison est null, on cloture la commande et incrémente le stock
+     * @param idCommandeF 
+     */
     public void livrer(int idCommandeF) {
         EntityManager em = emf.createEntityManager();
         em.getTransaction().begin();
         CommandeFournisseur cf = em.find(CommandeFournisseur.class, idCommandeF);
         Produit p = cf.getProduit();
+        
+        
+        if(cf.getDateLivraison() == null) {
         p.setQtte(p.getQtte() + cf.getQtte()); //on incrémente
         cf.setDateLivraison(new Date()); // On cloture la commande Fournisseur
         em.merge(p);
         em.merge(cf);
         em.getTransaction().commit();
-        em.close();
+        }
+            em.close();
     }
-    
-    public void creerCommandeClient(String nom, String prenom,
+
+    /**
+     * Création d'une commande client. 
+     * @param nom
+     * @param prenom
+     * @param qtte
+     * @param idProduit 
+     */
+    public void creerCommandeClient(int idClient,String nom, String prenom,
             int qtte, int idProduit) {
         EntityManager em = emf.createEntityManager();
         em.getTransaction().begin();
-        Query q = em.createQuery("SELECT * FROM Client Where nom='"+nom +"' AND prenom='"+prenom+"'");
-        List<Client> clients = q.getResultList();
-        Client c;
-        if(clients.isEmpty()) {
-           c = new Client();
-           c.setCommandeCollection(new ArrayList<Commande>());
-           c.setNom(nom);
-           c.setPrenom(prenom);
-           em.persist(c);
-        } else
-            c = clients.get(0);
-        
         Produit p = em.find(Produit.class, idProduit);
-        
-        Commande commande  = new Commande();
-        commande.setClient(c);
-        commande.setDate(new Date());
-        commande.setMontant(p.getPrix() * qtte);
-        commande.setProduit(p);
-        em.persist(commande);
-        c.getCommandeCollection().add(commande);
-        em.merge(commande);
-        em.merge(c);
-        em.getTransaction().commit();
-        em.close();
+
+        if (p != null && p.getQtte() >= qtte) { //On commande si le produit existe et s'il y a assez de qtte
+
+            Query q = em.createQuery("FROM Client c Where c.nom='" + nom + "' AND c.prenom='" + prenom+"'");     
+            
+            List<Client> clients = q.getResultList();
+            Client c;
+            if (clients.isEmpty()) {
+                c = new Client();
+                c.setCommandeCollection(new ArrayList<Commande>());
+                c.setNom(nom);
+                c.setPrenom(prenom);
+                c.setIdClient(1);
+                em.persist(c);
+            } else {
+                c = clients.get(0);
+            }
+            
+            Commande commande = new Commande(); //On créer la commande
+            commande.setClient(c);
+            commande.setDate(new Date());
+            commande.setMontant(p.getPrix() * qtte);
+            commande.setProduit(p);
+            commande.setQtte(qtte);
+            
+            CommandePK  cpk = new CommandePK();
+            cpk.setClientidClient(idProduit);
+            cpk.setIdCommande(1);
+            cpk.setProduitidProduit(idProduit);
+            
+            commande.setCommandePK(cpk);
+            em.persist(commande);
+            c.getCommandeCollection().add(commande); // On ajoute la commande au client
+            p.setQtte(p.getQtte() - qtte); // On Décremente la qtte du produit
+            
+            em.merge(commande);
+            em.merge(c);
+            em.merge(p);
+            em.getTransaction().commit();
+            em.close();
+        }
     }
-    
+
+    /**
+     * Paiement d'une commande
+     * @param idCommande
+     * @param modePaiement 
+     */
     public void payerCommande(int idCommande, String modePaiement) {
         EntityManager em = emf.createEntityManager();
         em.getTransaction().begin();
