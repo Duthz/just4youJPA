@@ -116,5 +116,14 @@ public class Model {
         em.getTransaction().commit();
         em.close();
     }
+    
+    public void payerCommande(int idCommande, String modePaiement) {
+        EntityManager em = emf.createEntityManager();
+        em.getTransaction().begin();
+        Commande commande = em.find(Commande.class, idCommande);
+        commande.setTypePaiement(modePaiement);
+        em.getTransaction().commit();
+        em.close();
+    }
 
 }
