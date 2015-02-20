@@ -17,3 +17,5 @@ manifest.mf
 
 # Compiled file
 *.class
+
+TP_TRANSACTIONS/just4youJPA/src/META-INF/persistence.xml
