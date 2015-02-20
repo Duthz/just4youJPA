@@ -1,1 +1,19 @@
 /TP_TRANSACTIONS/just4youJPA/nbproject/private/
+/TP_TRANSACTIONS/just4youJPA/src/META-INF/persistence.xml
+# NetBeans Folders
+nbproject/
+build/
+dist/
+
+# Netbeans Files
+build.xml
+manifest.mf
+
+# Temp file
+*.swp
+
+# Final submitted file
+*.zip
+
+# Compiled file
+*.class
