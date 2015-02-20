@@ -5,6 +5,8 @@
  */
 package just4youjpa;
 
+import just4youjpa.model.service.Model;
+
 /**
  *
  * @author pierregaillard
@@ -16,6 +18,9 @@ public class Just4youJPA {
      */
     public static void main(String[] args) {
         // TODO code application logic here
+        Model m = new Model();
+        
+        m.createProduit("Patate", "Patatier", 5, 2, 8, 4);
     }
     
 }

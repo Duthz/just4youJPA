@@ -24,56 +24,24 @@ import just4youjpa.model.entities.Produit;
  */
 public class Model {
 
-    private final EntityManagerFactory emf = Persistence.createEntityManagerFactory("ex-Struts-Spring-JPAPU");
+    private final EntityManagerFactory emf = Persistence.createEntityManagerFactory("just4youJPAPU");
 
-    public void createProduit(Produit produit) {
-        if (produit.getCommandeFournisseurCollection() == null) {
-            produit.setCommandeFournisseurCollection(new ArrayList<CommandeFournisseur>());
-        }
-        if (produit.getCommandeCollection() == null) {
-            produit.setCommandeCollection(new ArrayList<Commande>());
-        }
-        EntityManager em = null;
-        try {
-            em = emf.createEntityManager();
-            em.getTransaction().begin();
-            Collection<CommandeFournisseur> attachedCommandeFournisseurCollection = new ArrayList<CommandeFournisseur>();
-            for (CommandeFournisseur commandeFournisseurCollectionCommandeFournisseurToAttach : produit.getCommandeFournisseurCollection()) {
-                commandeFournisseurCollectionCommandeFournisseurToAttach = em.getReference(commandeFournisseurCollectionCommandeFournisseurToAttach.getClass(), commandeFournisseurCollectionCommandeFournisseurToAttach.getCommandeFournisseurPK());
-                attachedCommandeFournisseurCollection.add(commandeFournisseurCollectionCommandeFournisseurToAttach);
-            }
-            produit.setCommandeFournisseurCollection(attachedCommandeFournisseurCollection);
-            Collection<Commande> attachedCommandeCollection = new ArrayList<Commande>();
-            for (Commande commandeCollectionCommandeToAttach : produit.getCommandeCollection()) {
-                commandeCollectionCommandeToAttach = em.getReference(commandeCollectionCommandeToAttach.getClass(), commandeCollectionCommandeToAttach.getCommandePK());
-                attachedCommandeCollection.add(commandeCollectionCommandeToAttach);
-            }
-            produit.setCommandeCollection(attachedCommandeCollection);
-            em.persist(produit);
-            for (CommandeFournisseur commandeFournisseurCollectionCommandeFournisseur : produit.getCommandeFournisseurCollection()) {
-                Produit oldProduitOfCommandeFournisseurCollectionCommandeFournisseur = commandeFournisseurCollectionCommandeFournisseur.getProduit();
-                commandeFournisseurCollectionCommandeFournisseur.setProduit(produit);
-                commandeFournisseurCollectionCommandeFournisseur = em.merge(commandeFournisseurCollectionCommandeFournisseur);
-                if (oldProduitOfCommandeFournisseurCollectionCommandeFournisseur != null) {
-                    oldProduitOfCommandeFournisseurCollectionCommandeFournisseur.getCommandeFournisseurCollection().remove(commandeFournisseurCollectionCommandeFournisseur);
-                    oldProduitOfCommandeFournisseurCollectionCommandeFournisseur = em.merge(oldProduitOfCommandeFournisseurCollectionCommandeFournisseur);
-                }
-            }
-            for (Commande commandeCollectionCommande : produit.getCommandeCollection()) {
-                Produit oldProduitOfCommandeCollectionCommande = commandeCollectionCommande.getProduit();
-                commandeCollectionCommande.setProduit(produit);
-                commandeCollectionCommande = em.merge(commandeCollectionCommande);
-                if (oldProduitOfCommandeCollectionCommande != null) {
-                    oldProduitOfCommandeCollectionCommande.getCommandeCollection().remove(commandeCollectionCommande);
-                    oldProduitOfCommandeCollectionCommande = em.merge(oldProduitOfCommandeCollectionCommande);
-                }
-            }
-            em.getTransaction().commit();
-        } finally {
-            if (em != null) {
-                em.close();
-            }
-        }
+    public void createProduit(String libelle, String fournisseur, int qtte, int seuilMin, int seuilMax,
+            int prix) {
+        EntityManager em = emf.createEntityManager();
+        em.getTransaction().begin();
+        Produit p = new Produit();
+        p.setCommandeCollection(new ArrayList<Commande>());
+        p.setCommandeFournisseurCollection(new ArrayList<CommandeFournisseur>());
+        p.setFournisseur(fournisseur);
+        p.setLibelle(libelle);
+        p.setPrix(prix);
+        p.setQtte(qtte);
+        p.setQtteMax(qtte);
+        p.setQtteMin(qtte);
+        em.persist(p);
+        em.getTransaction().commit();
+        em.close();
     }
 
     public void livrer(int idCommandeF) {
@@ -83,11 +51,13 @@ public class Model {
         Produit p = cf.getProduit();
         p.setQtte(p.getQtte() + cf.getQtte()); //on incrémente
         cf.setDateLivraison(new Date()); // On cloture la commande Fournisseur
+        em.merge(p);
+        em.merge(cf);
         em.getTransaction().commit();
         em.close();
     }
     
-    public void creerCommandeClient(Integer idClient, String nom, String prenom,
+    public void creerCommandeClient(String nom, String prenom,
             int qtte, int idProduit) {
         EntityManager em = emf.createEntityManager();
         em.getTransaction().begin();
@@ -113,6 +83,7 @@ public class Model {
         em.persist(commande);
         c.getCommandeCollection().add(commande);
         em.merge(commande);
+        em.merge(c);
         em.getTransaction().commit();
         em.close();
     }
@@ -122,6 +93,7 @@ public class Model {
         em.getTransaction().begin();
         Commande commande = em.find(Commande.class, idCommande);
         commande.setTypePaiement(modePaiement);
+        em.merge(commande);
         em.getTransaction().commit();
         em.close();
     }
