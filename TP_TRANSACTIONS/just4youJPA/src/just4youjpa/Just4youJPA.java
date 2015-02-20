@@ -21,7 +21,7 @@ public class Just4youJPA {
         Model m = new Model();
         
         m.createProduit("Patate", "Patatier", 5, 2, 10, 3);
-        m.creerCommandeClient(1,"Arles", "Mathieu", 4, 1);
+        m.creerCommandeClient("Arles", "Mathieu", 4, 1);
     }
     
 }

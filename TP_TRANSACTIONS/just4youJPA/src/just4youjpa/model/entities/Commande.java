@@ -9,8 +9,10 @@ import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Basic;
 import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
@@ -29,17 +31,19 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "Commande.findAll", query = "SELECT c FROM Commande c"),
-    @NamedQuery(name = "Commande.findByIdCommande", query = "SELECT c FROM Commande c WHERE c.commandePK.idCommande = :idCommande"),
+    @NamedQuery(name = "Commande.findByIdCommande", query = "SELECT c FROM Commande c WHERE c.idCommande = :idCommande"),
     @NamedQuery(name = "Commande.findByQtte", query = "SELECT c FROM Commande c WHERE c.qtte = :qtte"),
     @NamedQuery(name = "Commande.findByDate", query = "SELECT c FROM Commande c WHERE c.date = :date"),
     @NamedQuery(name = "Commande.findByMontant", query = "SELECT c FROM Commande c WHERE c.montant = :montant"),
-    @NamedQuery(name = "Commande.findByTypePaiement", query = "SELECT c FROM Commande c WHERE c.typePaiement = :typePaiement"),
-    @NamedQuery(name = "Commande.findByProduitidProduit", query = "SELECT c FROM Commande c WHERE c.commandePK.produitidProduit = :produitidProduit"),
-    @NamedQuery(name = "Commande.findByClientidClient", query = "SELECT c FROM Commande c WHERE c.commandePK.clientidClient = :clientidClient")})
+    @NamedQuery(name = "Commande.findByTypePaiement", query = "SELECT c FROM Commande c WHERE c.typePaiement = :typePaiement")})
 public class Commande implements Serializable {
     private static final long serialVersionUID = 1L;
-    @EmbeddedId
-    protected CommandePK commandePK;
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Basic(optional = false)
+    @Column(name = "idCommande")
+    private Integer idCommande;
     @Basic(optional = false)
     @Column(name = "qtte")
     private int qtte;
@@ -52,37 +56,34 @@ public class Commande implements Serializable {
     private float montant;
     @Column(name = "typePaiement")
     private String typePaiement;
-    @JoinColumn(name = "Client_idClient", referencedColumnName = "idClient", insertable = false, updatable = false)
+    @JoinColumn(name = "Client_idClient", referencedColumnName = "idClient")
     @ManyToOne(optional = false)
     private Client client;
-    @JoinColumn(name = "Produit_idProduit", referencedColumnName = "idProduit", insertable = false, updatable = false)
+    @JoinColumn(name = "Produit_idProduit", referencedColumnName = "idProduit")
     @ManyToOne(optional = false)
     private Produit produit;
 
     public Commande() {
     }
 
-    public Commande(CommandePK commandePK) {
-        this.commandePK = commandePK;
+    public Commande(Integer idCommande) {
+        this.idCommande = idCommande;
     }
 
-    public Commande(CommandePK commandePK, int qtte, Date date, float montant) {
-        this.commandePK = commandePK;
+    public Commande(Integer idCommande, int qtte, Date date, float montant) {
+        this.idCommande = idCommande;
         this.qtte = qtte;
         this.date = date;
         this.montant = montant;
     }
 
-    public Commande(int idCommande, int produitidProduit, int clientidClient) {
-        this.commandePK = new CommandePK(idCommande, produitidProduit, clientidClient);
+
+    public Integer getInteger() {
+        return idCommande;
     }
 
-    public CommandePK getCommandePK() {
-        return commandePK;
-    }
-
-    public void setCommandePK(CommandePK commandePK) {
-        this.commandePK = commandePK;
+    public void setInteger(Integer idCommande) {
+        this.idCommande = idCommande;
     }
 
     public int getQtte() {
@@ -133,12 +134,6 @@ public class Commande implements Serializable {
         this.produit = produit;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (commandePK != null ? commandePK.hashCode() : 0);
-        return hash;
-    }
 
     @Override
     public boolean equals(Object object) {
@@ -147,7 +142,7 @@ public class Commande implements Serializable {
             return false;
         }
         Commande other = (Commande) object;
-        if ((this.commandePK == null && other.commandePK != null) || (this.commandePK != null && !this.commandePK.equals(other.commandePK))) {
+        if ((this.idCommande == null && other.idCommande != null) || (this.idCommande != null && !this.idCommande.equals(other.idCommande))) {
             return false;
         }
         return true;
@@ -155,7 +150,7 @@ public class Commande implements Serializable {
 
     @Override
     public String toString() {
-        return "just4youjpa.model.entities.Commande[ commandePK=" + commandePK + " ]";
+        return "just4youjpa.model.entities.Commande[ idCommande=" + idCommande + " ]";
     }
     
 }

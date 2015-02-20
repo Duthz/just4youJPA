@@ -9,8 +9,10 @@ import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Basic;
 import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
@@ -29,46 +31,46 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "CommandeFournisseur.findAll", query = "SELECT c FROM CommandeFournisseur c"),
-    @NamedQuery(name = "CommandeFournisseur.findByIdCommandeFournisseur", query = "SELECT c FROM CommandeFournisseur c WHERE c.commandeFournisseurPK.idCommandeFournisseur = :idCommandeFournisseur"),
+    @NamedQuery(name = "CommandeFournisseur.findByIdCommandeFournisseur", query = "SELECT c FROM CommandeFournisseur c WHERE c.idCommandeFournisseur = :idCommandeFournisseur"),
     @NamedQuery(name = "CommandeFournisseur.findByQtte", query = "SELECT c FROM CommandeFournisseur c WHERE c.qtte = :qtte"),
-    @NamedQuery(name = "CommandeFournisseur.findByDateLivraison", query = "SELECT c FROM CommandeFournisseur c WHERE c.dateLivraison = :dateLivraison"),
-    @NamedQuery(name = "CommandeFournisseur.findByProduitidProduit", query = "SELECT c FROM CommandeFournisseur c WHERE c.commandeFournisseurPK.produitidProduit = :produitidProduit")})
+    @NamedQuery(name = "CommandeFournisseur.findByDateLivraison", query = "SELECT c FROM CommandeFournisseur c WHERE c.dateLivraison = :dateLivraison")})
 public class CommandeFournisseur implements Serializable {
     private static final long serialVersionUID = 1L;
-    @EmbeddedId
-    protected CommandeFournisseurPK commandeFournisseurPK;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Basic(optional = false)
+    @Column(name = "idCommandeFournisseur")
+    private Integer idCommandeFournisseur;
     @Basic(optional = false)
     @Column(name = "qtte")
     private int qtte;
     @Column(name = "dateLivraison")
     @Temporal(TemporalType.DATE)
     private Date dateLivraison;
-    @JoinColumn(name = "Produit_idProduit", referencedColumnName = "idProduit", insertable = false, updatable = false)
+    @JoinColumn(name = "Produit_idProduit", referencedColumnName = "idProduit")
     @ManyToOne(optional = false)
     private Produit produit;
 
     public CommandeFournisseur() {
     }
 
-    public CommandeFournisseur(CommandeFournisseurPK commandeFournisseurPK) {
-        this.commandeFournisseurPK = commandeFournisseurPK;
+    public CommandeFournisseur(Integer idCommandeFournisseur) {
+        this.idCommandeFournisseur = idCommandeFournisseur;
     }
 
-    public CommandeFournisseur(CommandeFournisseurPK commandeFournisseurPK, int qtte) {
-        this.commandeFournisseurPK = commandeFournisseurPK;
+    public CommandeFournisseur(Integer idCommandeFournisseur, int qtte) {
+        this.idCommandeFournisseur = idCommandeFournisseur;
         this.qtte = qtte;
     }
 
-    public CommandeFournisseur(int idCommandeFournisseur, int produitidProduit) {
-        this.commandeFournisseurPK = new CommandeFournisseurPK(idCommandeFournisseur, produitidProduit);
+
+
+    public Integer getInteger() {
+        return idCommandeFournisseur;
     }
 
-    public CommandeFournisseurPK getCommandeFournisseurPK() {
-        return commandeFournisseurPK;
-    }
-
-    public void setCommandeFournisseurPK(CommandeFournisseurPK commandeFournisseurPK) {
-        this.commandeFournisseurPK = commandeFournisseurPK;
+    public void setInteger(Integer idCommandeFournisseur) {
+        this.idCommandeFournisseur = idCommandeFournisseur;
     }
 
     public int getQtte() {
@@ -98,7 +100,7 @@ public class CommandeFournisseur implements Serializable {
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (commandeFournisseurPK != null ? commandeFournisseurPK.hashCode() : 0);
+        hash += (idCommandeFournisseur != null ? idCommandeFournisseur.hashCode() : 0);
         return hash;
     }
 
@@ -109,7 +111,7 @@ public class CommandeFournisseur implements Serializable {
             return false;
         }
         CommandeFournisseur other = (CommandeFournisseur) object;
-        if ((this.commandeFournisseurPK == null && other.commandeFournisseurPK != null) || (this.commandeFournisseurPK != null && !this.commandeFournisseurPK.equals(other.commandeFournisseurPK))) {
+        if ((this.idCommandeFournisseur == null && other.idCommandeFournisseur != null) || (this.idCommandeFournisseur != null && !this.idCommandeFournisseur.equals(other.idCommandeFournisseur))) {
             return false;
         }
         return true;
@@ -117,7 +119,7 @@ public class CommandeFournisseur implements Serializable {
 
     @Override
     public String toString() {
-        return "just4youjpa.model.entities.CommandeFournisseur[ commandeFournisseurPK=" + commandeFournisseurPK + " ]";
+        return "just4youjpa.model.entities.CommandeFournisseur[ idCommandeFournisseur=" + idCommandeFournisseur + " ]";
     }
     
 }

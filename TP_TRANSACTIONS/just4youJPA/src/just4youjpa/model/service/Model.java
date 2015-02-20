@@ -15,7 +15,6 @@ import javax.persistence.Query;
 import just4youjpa.model.entities.Client;
 import just4youjpa.model.entities.Commande;
 import just4youjpa.model.entities.CommandeFournisseur;
-import just4youjpa.model.entities.CommandePK;
 import just4youjpa.model.entities.Produit;
 
 /**
@@ -81,13 +80,13 @@ public class Model {
      * @param qtte
      * @param idProduit 
      */
-    public void creerCommandeClient(int idClient,String nom, String prenom,
+    public void creerCommandeClient(String nom, String prenom,
             int qtte, int idProduit) {
         EntityManager em = emf.createEntityManager();
         em.getTransaction().begin();
         Produit p = em.find(Produit.class, idProduit);
 
-        if (p != null && p.getQtte() >= qtte) { //On commande si le produit existe et s'il y a assez de qtte
+        if (p != null && p.getQtte() >= qtte) { //On regarde si le produit existe et s'il y a assez de qtte
 
             Query q = em.createQuery("FROM Client c Where c.nom='" + nom + "' AND c.prenom='" + prenom+"'");     
             
@@ -111,19 +110,13 @@ public class Model {
             commande.setProduit(p);
             commande.setQtte(qtte);
             
-            CommandePK  cpk = new CommandePK();
-            cpk.setClientidClient(idProduit);
-            cpk.setIdCommande(1);
-            cpk.setProduitidProduit(idProduit);
-            
-            commande.setCommandePK(cpk);
             em.persist(commande);
             c.getCommandeCollection().add(commande); // On ajoute la commande au client
             p.setQtte(p.getQtte() - qtte); // On Décremente la qtte du produit
             
-            em.merge(commande);
             em.merge(c);
             em.merge(p);
+            em.merge(commande);
             em.getTransaction().commit();
             em.close();
         }
