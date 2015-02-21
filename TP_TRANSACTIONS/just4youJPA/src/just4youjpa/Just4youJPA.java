@@ -20,8 +20,14 @@ public class Just4youJPA {
         // TODO code application logic here
         Model m = new Model();
         
+        System.out.println("Création d'un produit");
         m.createProduit("Patate", "Patatier", 5, 2, 10, 3);
+        System.out.println("Création d'une commande client");
         m.creerCommandeClient("Arles", "Mathieu", 4, 1);
+        System.out.println("Paiement d'une commande");
+        m.payerCommande(1, "CB");
+        System.out.println("Livraison");
+        m.livrer(1);
     }
     
 }

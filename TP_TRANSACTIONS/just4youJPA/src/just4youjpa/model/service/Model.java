@@ -27,12 +27,13 @@ public class Model {
 
     /**
      * Création d'un produit
+     *
      * @param libelle
      * @param fournisseur
      * @param qtte
      * @param seuilMin
      * @param seuilMax
-     * @param prix 
+     * @param prix
      */
     public void createProduit(String libelle, String fournisseur, int qtte, int seuilMin, int seuilMax,
             int prix) {
@@ -45,40 +46,42 @@ public class Model {
         p.setLibelle(libelle);
         p.setPrix(prix);
         p.setQtte(qtte);
-        p.setQtteMax(qtte);
-        p.setQtteMin(qtte);
+        p.setQtteMax(seuilMax);
+        p.setQtteMin(seuilMin);
         em.persist(p);
         em.getTransaction().commit();
         em.close();
     }
 
     /**
-     * Livraison d'une commande fournisseur. Si la date de livraison est null, on cloture la commande et incrémente le stock
-     * @param idCommandeF 
+     * Livraison d'une commande fournisseur. Si la date de livraison est null,
+     * on cloture la commande et incrémente le stock
+     *
+     * @param idCommandeF
      */
     public void livrer(int idCommandeF) {
         EntityManager em = emf.createEntityManager();
         em.getTransaction().begin();
         CommandeFournisseur cf = em.find(CommandeFournisseur.class, idCommandeF);
         Produit p = cf.getProduit();
-        
-        
-        if(cf.getDateLivraison() == null) {
-        p.setQtte(p.getQtte() + cf.getQtte()); //on incrémente
-        cf.setDateLivraison(new Date()); // On cloture la commande Fournisseur
-        em.merge(p);
-        em.merge(cf);
-        em.getTransaction().commit();
+
+        if (cf.getDateLivraison() == null) {
+            p.setQtte(p.getQtte() + cf.getQtte()); //on incrémente
+            cf.setDateLivraison(new Date()); // On cloture la commande Fournisseur
+            em.merge(p);
+            em.merge(cf);
+            em.getTransaction().commit();
         }
-            em.close();
+        em.close();
     }
 
     /**
-     * Création d'une commande client. 
+     * Création d'une commande client.
+     *
      * @param nom
      * @param prenom
      * @param qtte
-     * @param idProduit 
+     * @param idProduit
      */
     public void creerCommandeClient(String nom, String prenom,
             int qtte, int idProduit) {
@@ -88,8 +91,8 @@ public class Model {
 
         if (p != null && p.getQtte() >= qtte) { //On regarde si le produit existe et s'il y a assez de qtte
 
-            Query q = em.createQuery("FROM Client c Where c.nom='" + nom + "' AND c.prenom='" + prenom+"'");     
-            
+            Query q = em.createQuery("FROM Client c Where c.nom='" + nom + "' AND c.prenom='" + prenom + "'");
+
             List<Client> clients = q.getResultList();
             Client c;
             if (clients.isEmpty()) {
@@ -102,18 +105,18 @@ public class Model {
             } else {
                 c = clients.get(0);
             }
-            
+
             Commande commande = new Commande(); //On créer la commande
             commande.setClient(c);
             commande.setDate(new Date());
             commande.setMontant(p.getPrix() * qtte);
             commande.setProduit(p);
             commande.setQtte(qtte);
-            
+
             em.persist(commande);
             c.getCommandeCollection().add(commande); // On ajoute la commande au client
             p.setQtte(p.getQtte() - qtte); // On Décremente la qtte du produit
-            
+
             em.merge(c);
             em.merge(p);
             em.merge(commande);
@@ -124,8 +127,9 @@ public class Model {
 
     /**
      * Paiement d'une commande
+     *
      * @param idCommande
-     * @param modePaiement 
+     * @param modePaiement
      */
     public void payerCommande(int idCommande, String modePaiement) {
         EntityManager em = emf.createEntityManager();
@@ -133,6 +137,19 @@ public class Model {
         Commande commande = em.find(Commande.class, idCommande);
         commande.setTypePaiement(modePaiement);
         em.merge(commande);
+        em.getTransaction().commit();
+        em.close();
+    }
+
+    public void creerCommandeFournisseur(int idProduit, int newQtte) {
+        EntityManager em = emf.createEntityManager();
+        em.getTransaction().begin();
+
+        Produit p = em.find(Produit.class, idProduit);
+        CommandeFournisseur cf = new CommandeFournisseur();
+        cf.setProduit(p);
+        cf.setQtte(p.getQtteMax() - newQtte);
+        em.persist(cf);
         em.getTransaction().commit();
         em.close();
     }

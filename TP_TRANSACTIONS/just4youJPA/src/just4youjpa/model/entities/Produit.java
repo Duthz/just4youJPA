@@ -5,6 +5,8 @@
  */
 package just4youjpa.model.entities;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
 import java.util.Collection;
 import javax.persistence.Basic;
@@ -20,6 +22,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import just4youjpa.listener.EventController;
 
 /**
  *
@@ -38,6 +41,7 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Produit.findByQtteMax", query = "SELECT p FROM Produit p WHERE p.qtteMax = :qtteMax"),
     @NamedQuery(name = "Produit.findByQtteMin", query = "SELECT p FROM Produit p WHERE p.qtteMin = :qtteMin")})
 public class Produit implements Serializable {
+
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -67,11 +71,25 @@ public class Produit implements Serializable {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "produit")
     private Collection<Commande> commandeCollection;
 
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+
+    public void addPropertyChangeListener(PropertyChangeListener p) {
+        this.pcs.addPropertyChangeListener(p);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener p) {
+        this.pcs.removePropertyChangeListener(p);
+    }
+
     public Produit() {
+        pcs.addPropertyChangeListener(new EventController());
+
     }
 
     public Produit(Integer idProduit) {
         this.idProduit = idProduit;
+        pcs.addPropertyChangeListener(new EventController());
+
     }
 
     public Produit(Integer idProduit, String libelle, String fournisseur, float prix, int qtte, int qtteMax, int qtteMin) {
@@ -121,7 +139,12 @@ public class Produit implements Serializable {
     }
 
     public void setQtte(int qtte) {
+        this.addPropertyChangeListener(new EventController());
+        Integer old_value=this.qtte;
         this.qtte = qtte;
+        if (old_value!=null) {
+            this.pcs.firePropertyChange("qtte", old_value, this);
+        }
     }
 
     public int getQtteMax() {
@@ -182,5 +205,5 @@ public class Produit implements Serializable {
     public String toString() {
         return "just4youjpa.model.entities.Produit[ idProduit=" + idProduit + " ]";
     }
-    
+
 }
